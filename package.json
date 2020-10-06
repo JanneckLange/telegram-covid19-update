@@ -11,9 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^14.11.5",
-    "axios": "^0.20.0",
     "cron": "^1.8.2",
-    "http": "0.0.1-security",
     "moment": "^2.27.0",
     "node-cron": "^2.0.3",
     "request": "^2.81.0",
