@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  telegram-covid19-update-node:
+    container_name: telegram-covid19-update
+    image: sapza/telegram-covid19-update
+    build: .
+    environment:
+      - DEBUG=true
+      - BOT_TOKEN=1254832068:AAF6LKOEISf01APSQPaqj-bukl6GUURdPzg
+    command: ["npm", "run", "start"]
