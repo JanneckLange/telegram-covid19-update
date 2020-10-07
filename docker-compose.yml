@@ -9,3 +9,13 @@ services:
       - DEBUG=true
       - BOT_TOKEN=censored
     command: ["npm", "run", "start"]
+
+  watchtower:
+    command: --label-enable --cleanup --interval 300
+    image: containrrr/watchtower
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    network_mode: none
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
