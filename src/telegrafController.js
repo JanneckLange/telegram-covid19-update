@@ -82,6 +82,18 @@ var TelegrafController = /** @class */ (function () {
                                 return [2 /*return*/];
                             });
                         }); });
+                        this.telegraf.command('update', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                ctx.reply('Sende mir einfach wieder einen Standort um deine Region zu ändern.');
+                                return [2 /*return*/];
+                            });
+                        }); });
+                        this.telegraf.command('info', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                ctx.reply('Comming soon! \n🔴 50+ 🏘🚷\n🟠 35 bis 50 😷\n🟡 20 bis 35 😧\n🟢 0 bis 20 ☺');
+                                return [2 /*return*/];
+                            });
+                        }); });
                         this.telegraf.on('location', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                             var location;
                             return __generator(this, function (_a) {

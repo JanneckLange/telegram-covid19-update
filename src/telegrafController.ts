@@ -44,6 +44,14 @@ export class TelegrafController {
             );
         });
 
+        this.telegraf.command('update', async ctx => {
+            ctx.reply('Sende mir einfach wieder einen Standort um deine Region zu ändern.')
+        });
+
+        this.telegraf.command('info', async ctx => {
+            ctx.reply('Comming soon! \n🔴 50+ 🏘🚷\n🟠 35 bis 50 😷\n🟡 20 bis 35 😧\n🟢 0 bis 20 ☺')
+        });
+
         this.telegraf.on('location', async ctx => {
             ctx.reply('Ort wird geladen...');
             let location = await this.covid19Region.findLocationForPoint([ctx.update.message.location.longitude, ctx.update.message.location.latitude]);
