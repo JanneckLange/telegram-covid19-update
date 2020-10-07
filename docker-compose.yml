@@ -9,7 +9,14 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
     environment:
       - DEBUG=true
-      - BOT_TOKEN=censored
+      - BOT_TOKEN=xxx
+      - DB_URL=telegram-covid19-update-mongo
+      - DB_NAME=telegram-update
+      - DB_PORT=27017
+    links:
+      - telegram-covid19-update-mongo
+    depends_on:
+      - telegram-covid19-update-mongo
     command: ["npm", "run", "start"]
 
   watchtower:
@@ -21,3 +28,19 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  telegram-covid19-update-mongo:
+    container_name: telegram-covid19-update-mongo
+    image: mongo:bionic
+    restart: always
+    logging:
+      driver: none
+    expose:
+      - "27019"
+    ports:
+      - "27019:27017"
+    volumes:
+      - "db:/data/covid19/telegram-update"
+
+volumes:
+  db:

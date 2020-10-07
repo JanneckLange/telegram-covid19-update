@@ -36,66 +36,36 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var mongoose = require("mongoose");
-var telegrafController_1 = require("./telegrafController");
-var Start = /** @class */ (function () {
-    function Start(mongoUrl, dbName, mongoPort) {
-        if (mongoUrl === void 0) { mongoUrl = process.env.DB_URL; }
-        if (dbName === void 0) { dbName = process.env.DB_NAME; }
-        if (mongoPort === void 0) { mongoPort = process.env.DB_PORT; }
-        this.mongoUrl = mongoUrl;
-        this.dbName = dbName;
-        this.mongoPort = mongoPort;
-        this.url = "mongodb://" + this.mongoUrl + ":" + this.mongoPort + "/" + this.dbName;
-        this.init();
-        // this.handleShutdown();
+var request = require('request');
+var Covid19CasesController = /** @class */ (function () {
+    function Covid19CasesController() {
     }
-    Start.prototype.init = function () {
+    Covid19CasesController.prototype.getByUpdateTime = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var url, items, err_1;
             return __generator(this, function (_a) {
-                mongoose.connect(this.url, Start.mongoOptions);
-                mongoose.connection.on('open', function () {
-                    console.info('Connected to Mongo.');
-                });
-                mongoose.connection.on('error', function (err) {
-                    console.error(err);
-                });
-                new telegrafController_1.TelegrafController();
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        url = "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_Landkreisdaten/FeatureServer/0/query?where=RS=" + locationId + "&outFields=last_update,cases7_per_100k&f=json";
+                        return [4 /*yield*/, request(url, { json: true })];
+                    case 1:
+                        items = _a.sent();
+                        // let cases
+                        // resolve(this.round(body.features[0].attributes.cases7_per_100k));
+                        items = items.map(function (item) {
+                            return { id: item._id, description: item.description };
+                        });
+                        return [2 /*return*/, items];
+                    case 2:
+                        err_1 = _a.sent();
+                        console.error('Caught error', err_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
             });
         });
     };
-    Start.prototype.handleShutdown = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var signals;
-            return __generator(this, function (_a) {
-                process.stdin.resume();
-                signals = {
-                    'uncaughtException': -1,
-                    'exit': 0,
-                    'SIGHUP': 1,
-                    'SIGINT': 2,
-                    'SIGTERM': 15,
-                    'SIGUSR1': 98,
-                    'SIGUSR2': 98
-                };
-                Object.keys(signals).forEach(function (signal) {
-                    process.on(signal, function () {
-                        console.log("process received a " + signal + " signal");
-                        console.log('Exit with ' + signals[signal]);
-                        process.exit();
-                    });
-                });
-                return [2 /*return*/];
-            });
-        });
-    };
-    Start.mongoOptions = {
-        useNewUrlParser: true,
-        useFindAndModify: true,
-        useUnifiedTopology: true,
-        useCreateIndex: true,
-    };
-    return Start;
+    return Covid19CasesController;
 }());
-new Start();
+exports.Covid19CasesController = Covid19CasesController;
