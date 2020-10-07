@@ -7,5 +7,5 @@ services:
     build: .
     environment:
       - DEBUG=true
-      - BOT_TOKEN=1254832068:AAF6LKOEISf01APSQPaqj-bukl6GUURdPzg
+      - BOT_TOKEN=censored
     command: ["npm", "run", "start"]
