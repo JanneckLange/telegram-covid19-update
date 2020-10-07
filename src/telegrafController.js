@@ -103,6 +103,10 @@ var TelegrafController = /** @class */ (function () {
                                         return [4 /*yield*/, this.covid19Region.findLocationForPoint([ctx.update.message.location.longitude, ctx.update.message.location.latitude])];
                                     case 1:
                                         location = _a.sent();
+                                        if (!location) {
+                                            ctx.reply("Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.");
+                                            return [2 /*return*/];
+                                        }
                                         return [4 /*yield*/, this.follower.update(ctx.update.message.from.id, location.id)];
                                     case 2:
                                         _a.sent();

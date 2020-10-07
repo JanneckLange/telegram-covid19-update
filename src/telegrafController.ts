@@ -55,6 +55,10 @@ export class TelegrafController {
         this.telegraf.on('location', async ctx => {
             ctx.reply('Ort wird geladen...');
             let location = await this.covid19Region.findLocationForPoint([ctx.update.message.location.longitude, ctx.update.message.location.latitude]);
+            if(!location){
+                ctx.reply(`Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
+                return;
+            }
             await this.follower.update(ctx.update.message.from.id, location.id);
             await ctx.reply(`Dein Ort wurde auf ${location.name} aktualisiert.`);
             this.sendUpdate(ctx.update.message.from.id, location.id);
