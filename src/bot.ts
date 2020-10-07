@@ -16,7 +16,7 @@ export class CoronaUpdate {
     }
 
     main() {
-        console.log(moment().format());
+        this.sendUpdate('started');
         const jobTime = '00 8 * * *';
         const job = new CronJob(jobTime, async () => {
             this.sendUpdate(`${await this.getCasesPer100kIn7Days()} Fälle auf 100.000 Einwohner in den letzten 7 Tagen.`);

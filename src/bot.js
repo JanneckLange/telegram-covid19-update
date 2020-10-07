@@ -37,7 +37,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var telegraf_1 = require("telegraf");
-var moment = require("moment");
 var CronJob = require('cron').CronJob;
 var request = require('request');
 var CoronaUpdate = /** @class */ (function () {
@@ -49,7 +48,7 @@ var CoronaUpdate = /** @class */ (function () {
     }
     CoronaUpdate.prototype.main = function () {
         var _this = this;
-        console.log(moment().format());
+        this.sendUpdate('started');
         var jobTime = '00 8 * * *';
         var job = new CronJob(jobTime, function () { return __awaiter(_this, void 0, void 0, function () {
             var _a;
