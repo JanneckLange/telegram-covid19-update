@@ -5,6 +5,8 @@ services:
     container_name: telegram-covid19-update
     image: sapza/telegram-covid19-update
     build: .
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       - DEBUG=true
       - BOT_TOKEN=censored
