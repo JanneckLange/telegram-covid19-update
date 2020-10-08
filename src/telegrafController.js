@@ -43,6 +43,7 @@ var CronJob = require('cron').CronJob;
 var request = require('request');
 var nodeBot = require('telegraf');
 var session = require('telegraf/session');
+var logger_1 = require("./logger");
 var TelegrafController = /** @class */ (function () {
     function TelegrafController() {
         if (process.env.BOT_TOKEN === undefined)
@@ -66,6 +67,7 @@ var TelegrafController = /** @class */ (function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
+                                        logger_1.loggerUserLevel.info(ctx.update.message.from.id + " new User");
                                         ctx.reply("Willkommen " + ctx.update.message.from.first_name + ",\n\n1\uFE0F\u20E3 Sende mir deinen Standort oder den Standort der Region zu, von der du Covid19 Statistiken erhalten m\u00F6chtest.\n\n2\uFE0F\u20E3 Erhalte t\u00E4glich ein Update.\n\n\u2705 Du kannst die Region jederzeit \u00E4ndern.");
                                         return [4 /*yield*/, this.follower.create(ctx.update.message.from.id)];
                                     case 1:
@@ -76,6 +78,7 @@ var TelegrafController = /** @class */ (function () {
                         }); });
                         this.telegraf.command('quelle', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
+                                logger_1.loggerUserLevel.info(ctx.update.message.from.id + " command 'quelle'");
                                 ctx.replyWithHTML("Die Daten sind die „Fallzahlen in Deutschland“ des <a href='https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Fallzahlen.html'>Robert Koch-Institut (RKI)</a> \n\n" +
                                     "Quellenvermerk: Robert Koch-Institut (RKI), dl-de/by-2-0 \n" +
                                     "API: <a href='https://npgeo-corona-npgeo-de.hub.arcgis.com/datasets/dd4580c810204019a7b8eb3e0b329dd6_0'>NPGEO Corona</a>");
@@ -84,12 +87,14 @@ var TelegrafController = /** @class */ (function () {
                         }); });
                         this.telegraf.command('update', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
+                                logger_1.loggerUserLevel.info(ctx.update.message.from.id + " command 'update'");
                                 ctx.reply('Sende mir einfach wieder einen Standort um deine Region zu ändern.');
                                 return [2 /*return*/];
                             });
                         }); });
                         this.telegraf.command('info', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
+                                logger_1.loggerUserLevel.info(ctx.update.message.from.id + " command 'info'");
                                 ctx.reply('Comming soon! \n🔴 50+ 🏘🚷\n🟠 35 bis 50 😷\n🟡 20 bis 35 😧\n🟢 0 bis 20 ☺');
                                 return [2 /*return*/];
                             });
@@ -99,11 +104,13 @@ var TelegrafController = /** @class */ (function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
+                                        logger_1.loggerUserLevel.info(ctx.update.message.from.id + " send new location");
                                         ctx.reply('Ort wird geladen...');
                                         return [4 /*yield*/, this.covid19Region.findLocationForPoint([ctx.update.message.location.longitude, ctx.update.message.location.latitude])];
                                     case 1:
                                         location = _a.sent();
                                         if (!location) {
+                                            logger_1.loggerUserLevel.error(ctx.update.message.from.id + " location could not be updated [" + ctx.update.message.location.longitude + ", " + ctx.update.message.location.latitude + "] (long, lat)");
                                             ctx.reply("Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.");
                                             return [2 /*return*/];
                                         }
@@ -113,6 +120,7 @@ var TelegrafController = /** @class */ (function () {
                                         return [4 /*yield*/, ctx.reply("Dein Ort wurde auf " + location.name + " aktualisiert.")];
                                     case 3:
                                         _a.sent();
+                                        logger_1.loggerUserLevel.info(ctx.update.message.from.id + " location updated to " + location.id);
                                         this.sendUpdate(ctx.update.message.from.id, location.id);
                                         return [2 /*return*/];
                                 }
@@ -153,7 +161,9 @@ var TelegrafController = /** @class */ (function () {
                     var _this = this;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
-                            case 0: return [4 /*yield*/, this.follower.getAllWithLocation()];
+                            case 0:
+                                logger_1.loggerSystemLevel.info("Scheduled Update started");
+                                return [4 /*yield*/, this.follower.getAllWithLocation()];
                             case 1:
                                 follower = _a.sent();
                                 follower.forEach(function (follower) {
