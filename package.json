@@ -21,7 +21,8 @@
     "node-cron": "^2.0.3",
     "proj4": "^2.6.2",
     "request": "^2.81.0",
-    "telegraf": "^3.38.0"
+    "telegraf": "^3.38.0",
+    "typescript-logging": "^1.0.0"
   },
   "devDependencies": {
     "@types/mongodb": "^3.5.27"
