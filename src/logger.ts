@@ -10,7 +10,7 @@ CategoryServiceFactory.setDefaultConfiguration(new CategoryConfiguration(process
 export const loggerSystemLevel = new Category("system");
 export const loggerMongoLevel = new Category("mongo", loggerSystemLevel);
 export const catDebug = new Category("DEBUG", loggerSystemLevel);
-export const loggerUserLevel = new Category("PYTHON", loggerSystemLevel);
+export const loggerUserLevel = new Category("USER", loggerSystemLevel);
 
 // Optionally get a logger for a category, since 0.5.0 this is not necessary anymore, you can use the category itself to log.
 // export const log: CategoryLogger = CategoryServiceFactory.getLogger(cat);

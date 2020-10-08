@@ -9,6 +9,6 @@ typescript_logging_1.CategoryServiceFactory.setDefaultConfiguration(new typescri
 exports.loggerSystemLevel = new typescript_logging_1.Category("system");
 exports.loggerMongoLevel = new typescript_logging_1.Category("mongo", exports.loggerSystemLevel);
 exports.catDebug = new typescript_logging_1.Category("DEBUG", exports.loggerSystemLevel);
-exports.loggerUserLevel = new typescript_logging_1.Category("PYTHON", exports.loggerSystemLevel);
+exports.loggerUserLevel = new typescript_logging_1.Category("USER", exports.loggerSystemLevel);
 // Optionally get a logger for a category, since 0.5.0 this is not necessary anymore, you can use the category itself to log.
 // export const log: CategoryLogger = CategoryServiceFactory.getLogger(cat);
