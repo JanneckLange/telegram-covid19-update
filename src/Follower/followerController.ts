@@ -10,13 +10,13 @@ export class FollowerController {
         }
     }
 
-    public async create(telegramId: string): Promise<void> {
-        const item = new FollowerModel({telegramId});
+    public async create(telegramId: string, username: string): Promise<void> {
+        const item = new FollowerModel({telegramId, username});
         try {
             await item.save();
         } catch (err) {
             if (err.code !== 11000) {
-                console.error('Could not insert follower...')
+                console.error('Could not insert follower...');
                 console.error(err)
             }
         }

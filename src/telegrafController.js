@@ -69,7 +69,7 @@ var TelegrafController = /** @class */ (function () {
                                         ctx.session.locationPromisse = null;
                                         logger_1.loggerUserLevel.info(ctx.update.message.from.id + " new User");
                                         ctx.reply("Willkommen " + ctx.update.message.from.first_name + ",\n\n1\uFE0F\u20E3 Sende mir deinen Standort oder den Standort der Region zu, von der du Covid19 Statistiken erhalten m\u00F6chtest.\n\n2\uFE0F\u20E3 Erhalte t\u00E4glich ein Update.\n\n\u2705 Du kannst die Region jederzeit \u00E4ndern.");
-                                        return [4 /*yield*/, this.follower.create(ctx.update.message.from.id)];
+                                        return [4 /*yield*/, this.follower.create(ctx.update.message.from.id, ctx.update.message.from.first_name ? ctx.update.message.from.first_name : ctx.update.message.from.username)];
                                     case 1:
                                         _a.sent();
                                         return [2 /*return*/];

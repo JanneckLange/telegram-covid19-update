@@ -35,7 +35,7 @@ export class TelegrafController {
             ctx.session.locationPromisse = null;
             loggerUserLevel.info(`${ctx.update.message.from.id} new User`);
             ctx.reply(`Willkommen ${ctx.update.message.from.first_name},\n\n1️⃣ Sende mir deinen Standort oder den Standort der Region zu, von der du Covid19 Statistiken erhalten möchtest.\n\n2️⃣ Erhalte täglich ein Update.\n\n✅ Du kannst die Region jederzeit ändern.`);
-            await this.follower.create(ctx.update.message.from.id);
+            await this.follower.create(ctx.update.message.from.id, ctx.update.message.from.first_name ? ctx.update.message.from.first_name : ctx.update.message.from.username);
         });
 
         this.telegraf.command('quelle', async ctx => {

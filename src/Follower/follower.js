@@ -7,6 +7,7 @@ var FollowerSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    username: String,
     regionId0: String,
     regionId1: String,
 });

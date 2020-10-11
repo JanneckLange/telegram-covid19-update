@@ -3,6 +3,7 @@ import * as mongoose from 'mongoose';
 interface IFollower {
     _id: string;
     telegramId: string;
+    username: string
     regionId0?: string
     regionId1?: string
 }
@@ -13,6 +14,7 @@ const FollowerSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    username: String,
     regionId0: String,
     regionId1: String,
 });
