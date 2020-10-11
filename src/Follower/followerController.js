@@ -47,7 +47,7 @@ var FollowerController = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, follower_1.FollowerModel.find({ $and: [{ regionId: { $ne: null } }, { regionId: { $ne: '' } }] })];
+                        return [4 /*yield*/, follower_1.FollowerModel.find({ $or: [{ regionId0: { $ne: null } }, { regionId1: { $ne: null } }] })];
                     case 1: return [2 /*return*/, _a.sent()];
                     case 2:
                         err_1 = _a.sent();
@@ -84,11 +84,19 @@ var FollowerController = /** @class */ (function () {
             });
         });
     };
-    FollowerController.prototype.update = function (id, regionId) {
+    FollowerController.prototype.update = function (id, regionId, locationType) {
         return __awaiter(this, void 0, void 0, function () {
+            var updateData;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, follower_1.FollowerModel.findOneAndUpdate({ telegramId: id }, { regionId: regionId })];
+                    case 0:
+                        if (locationType === 0) {
+                            updateData = { regionId0: regionId };
+                        }
+                        else {
+                            updateData = { regionId1: regionId };
+                        }
+                        return [4 /*yield*/, follower_1.FollowerModel.findOneAndUpdate({ telegramId: id }, updateData)];
                     case 1:
                         _a.sent();
                         return [2 /*return*/];

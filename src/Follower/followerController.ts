@@ -4,7 +4,7 @@ export class FollowerController {
 
     public async getAllWithLocation(): Promise<IFollower[]> {
         try {
-            return await FollowerModel.find({$and: [{regionId: {$ne: null}}, {regionId: {$ne: ''}}]});
+            return await FollowerModel.find({$or: [{regionId0: {$ne: null}}, {regionId1: {$ne: null}}]});
         } catch (err) {
             console.error('Caught error', err);
         }
@@ -22,8 +22,14 @@ export class FollowerController {
         }
     }
 
-    public async update(id: string, regionId: string): Promise<void> {
-        await FollowerModel.findOneAndUpdate({telegramId: id}, {regionId: regionId});
+    public async update(id: string, regionId: string, locationType: number): Promise<void> {
+        let updateData;
+        if(locationType === 0){
+            updateData = {regionId0: regionId}
+        }else{
+            updateData = {regionId1: regionId}
+        }
+        await FollowerModel.findOneAndUpdate({telegramId: id}, updateData);
     }
 
     public async remove(id: string): Promise<void> {

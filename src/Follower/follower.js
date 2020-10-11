@@ -7,7 +7,8 @@ var FollowerSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    regionId: String,
+    regionId0: String,
+    regionId1: String,
 });
 var FollowerModel = mongoose.model('Follower', FollowerSchema);
 exports.FollowerModel = FollowerModel;
