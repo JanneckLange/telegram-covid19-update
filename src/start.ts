@@ -1,5 +1,6 @@
 import * as mongoose from 'mongoose';
 import {TelegrafController} from './telegrafController';
+import {loggerMongoLevel} from './logger';
 
 class Start {
 
@@ -22,7 +23,8 @@ class Start {
         this.mongoPort = mongoPort;
         this.mongoUser = mongoUser;
         this.mongoPassword = mongoPw;
-        this.url = `mongodb://${this.mongoUser}:${this.mongoPassword}@${this.mongoUrl}:${this.mongoPort}/${this.dbName}`;
+        this.url = `mongodb://${this.mongoUser}:${this.mongoPassword}@${this.mongoUrl}:${this.mongoPort}/admin`;
+        loggerMongoLevel.info(this.url);
 
         this.init();
     }
@@ -30,10 +32,10 @@ class Start {
     async init() {
         mongoose.connect(this.url, Start.mongoOptions);
         mongoose.connection.on('open', () => {
-            console.info('Connected to Mongo.');
+            loggerMongoLevel.info('Connected to Mongo.');
         });
         mongoose.connection.on('error', (err: any) => {
-            console.error(err);
+            loggerMongoLevel.error('Mongo connection error', err);
         });
         new TelegrafController();
     }

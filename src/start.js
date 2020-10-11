@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose = require("mongoose");
 var telegrafController_1 = require("./telegrafController");
+var logger_1 = require("./logger");
 var Start = /** @class */ (function () {
     function Start(mongoUrl, dbName, mongoPort, mongoUser, mongoPw) {
         if (mongoUrl === void 0) { mongoUrl = process.env.DB_URL; }
@@ -50,7 +51,8 @@ var Start = /** @class */ (function () {
         this.mongoPort = mongoPort;
         this.mongoUser = mongoUser;
         this.mongoPassword = mongoPw;
-        this.url = "mongodb://" + this.mongoUser + ":" + this.mongoPassword + "@" + this.mongoUrl + ":" + this.mongoPort + "/" + this.dbName;
+        this.url = "mongodb://" + this.mongoUser + ":" + this.mongoPassword + "@" + this.mongoUrl + ":" + this.mongoPort + "/admin";
+        logger_1.loggerMongoLevel.info(this.url);
         this.init();
     }
     Start.prototype.init = function () {
@@ -58,10 +60,10 @@ var Start = /** @class */ (function () {
             return __generator(this, function (_a) {
                 mongoose.connect(this.url, Start.mongoOptions);
                 mongoose.connection.on('open', function () {
-                    console.info('Connected to Mongo.');
+                    logger_1.loggerMongoLevel.info('Connected to Mongo.');
                 });
                 mongoose.connection.on('error', function (err) {
-                    console.error(err);
+                    logger_1.loggerMongoLevel.error('Mongo connection error', err);
                 });
                 new telegrafController_1.TelegrafController();
                 return [2 /*return*/];
