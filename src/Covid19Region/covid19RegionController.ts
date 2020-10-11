@@ -2,8 +2,6 @@ import {ICovid19RegionData, ICovid19Region} from './covid19Region';
 
 const request = require('request');
 import * as proj4 from "proj4";
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import * as turf from '@turf/helpers'
 
 
 export class Covid19RegionsController {
@@ -32,7 +30,6 @@ export class Covid19RegionsController {
 
     public async getAllLocations(): Promise<ICovid19Region[]> {
         let url = `https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_Landkreisdaten/FeatureServer/0/query?where=1%3D1&outFields=RS,GEN,BL,BL_ID,county&f=json&geometryType=esriGeometryPolygon`;
-
         return new Promise(((resolve, reject) => request(url, {json: true}, (err, res, body) => {
             if (err) {
                 reject(err);
@@ -44,28 +41,73 @@ export class Covid19RegionsController {
                     county: item.attributes.country,
                     name: item.attributes.GEN,
                     id: item.attributes.RS,
-                    geometry: [item.geometry.rings[0].map((wgs84Point: Array<number>): Array<number> => {
-                        return proj4("+proj=utm +zone=32", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs", wgs84Point)
-                    })]
+                    geometry: item.geometry.rings.map((arr) => {
+                        return arr.map((wgs84Point: Array<number>): Array<number> => {
+                            return proj4("+proj=utm +zone=32", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs", wgs84Point);
+                        });
+                    })
                 }
             });
+            // console.log(regions)
+
+            // const fs = require('fs');
+            // fs.writeFile('test.json', JSON.stringify(regions), function (err) {
+            //     if (err) return console.log(err);
+            //     console.log('Hello World > helloworld.txt');
+            // });
+
             resolve(regions);
         })));
     }
 
-    public async findLocationForPoint(point: Array<number> = [
-        8.469085693359375,
-        49.48775429690567
-    ]): Promise<{ bundeslandId: string, id: string, name: string }> {
+    public async findLocationForPoint(point: [number, number] = [9.895385, 53.54986]): Promise<{ bundeslandId: string, id: string, name: string }> {
         const regions: ICovid19Region[] = await this.getAllLocations();
         const location = regions.find(region => {
-            return booleanPointInPolygon(point, turf.polygon(region.geometry))
+            try {
+                return Covid19RegionsController.isPointInsideGeoJson(point, region.geometry);
+            } catch (e) {
+                console.error(`Point ${point} in ${region.name} | ${region.id}`);
+                console.error(e);
+                return false;
+            }
         });
-        if(!location){
-            return null;
-        }
-        return {bundeslandId: location.bundeslandId, id: location.id, name: location.name,}
+        return !location ? null : {bundeslandId: location.bundeslandId, id: location.id, name: location.name,}
     }
+
+    /**
+     * check if a geoPoint is inside a GeoJSON polygon
+     * @param point
+     * @param vs
+     */
+    static isPointInsideGeoJson(point: [number, number], vs: Array<Array<Array<number>>>) {
+        return !!vs.find(arr => {
+            return Covid19RegionsController.isPointInsidePolygon(point, arr);
+        });
+    }
+
+    /**
+     * check if a geoPoint is inside a single polygon
+     * @param point
+     * @param vs
+     */
+    static isPointInsidePolygon(point, vs) {
+        // ray-casting algorithm based on
+        // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html/pnpoly.html
+
+        const x = point[0], y = point[1];
+
+        let inside = false;
+        for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+            const xi = vs[i][0], yi = vs[i][1];
+            const xj = vs[j][0], yj = vs[j][1];
+
+            const intersect = ((yi > y) != (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+
+        return inside;
+    };
 
     private static round(num: number) {
         return Math.round((num + Number.EPSILON) * 100) / 100

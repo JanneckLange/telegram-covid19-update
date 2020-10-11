@@ -38,8 +38,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var request = require('request');
 var proj4 = require("proj4");
-var boolean_point_in_polygon_1 = require("@turf/boolean-point-in-polygon");
-var turf = require("@turf/helpers");
 var Covid19RegionsController = /** @class */ (function () {
     function Covid19RegionsController() {
     }
@@ -87,21 +85,26 @@ var Covid19RegionsController = /** @class */ (function () {
                                 county: item.attributes.country,
                                 name: item.attributes.GEN,
                                 id: item.attributes.RS,
-                                geometry: [item.geometry.rings[0].map(function (wgs84Point) {
+                                geometry: item.geometry.rings.map(function (arr) {
+                                    return arr.map(function (wgs84Point) {
                                         return proj4("+proj=utm +zone=32", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs", wgs84Point);
-                                    })]
+                                    });
+                                })
                             };
                         });
+                        // console.log(regions)
+                        // const fs = require('fs');
+                        // fs.writeFile('test.json', JSON.stringify(regions), function (err) {
+                        //     if (err) return console.log(err);
+                        //     console.log('Hello World > helloworld.txt');
+                        // });
                         resolve(regions);
                     }); }))];
             });
         });
     };
     Covid19RegionsController.prototype.findLocationForPoint = function (point) {
-        if (point === void 0) { point = [
-            8.469085693359375,
-            49.48775429690567
-        ]; }
+        if (point === void 0) { point = [9.895385, 53.54986]; }
         return __awaiter(this, void 0, void 0, function () {
             var regions, location;
             return __generator(this, function (_a) {
@@ -110,16 +113,51 @@ var Covid19RegionsController = /** @class */ (function () {
                     case 1:
                         regions = _a.sent();
                         location = regions.find(function (region) {
-                            return boolean_point_in_polygon_1.default(point, turf.polygon(region.geometry));
+                            try {
+                                return Covid19RegionsController.isPointInsideGeoJson(point, region.geometry);
+                            }
+                            catch (e) {
+                                console.error("Point " + point + " in " + region.name + " | " + region.id);
+                                console.error(e);
+                                return false;
+                            }
                         });
-                        if (!location) {
-                            return [2 /*return*/, null];
-                        }
-                        return [2 /*return*/, { bundeslandId: location.bundeslandId, id: location.id, name: location.name, }];
+                        return [2 /*return*/, !location ? null : { bundeslandId: location.bundeslandId, id: location.id, name: location.name, }];
                 }
             });
         });
     };
+    /**
+     * check if a geoPoint is inside a GeoJSON polygon
+     * @param point
+     * @param vs
+     */
+    Covid19RegionsController.isPointInsideGeoJson = function (point, vs) {
+        return !!vs.find(function (arr) {
+            return Covid19RegionsController.isPointInsidePolygon(point, arr);
+        });
+    };
+    /**
+     * check if a geoPoint is inside a single polygon
+     * @param point
+     * @param vs
+     */
+    Covid19RegionsController.isPointInsidePolygon = function (point, vs) {
+        // ray-casting algorithm based on
+        // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html/pnpoly.html
+        var x = point[0], y = point[1];
+        var inside = false;
+        for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+            var xi = vs[i][0], yi = vs[i][1];
+            var xj = vs[j][0], yj = vs[j][1];
+            var intersect = ((yi > y) != (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect)
+                inside = !inside;
+        }
+        return inside;
+    };
+    ;
     Covid19RegionsController.round = function (num) {
         return Math.round((num + Number.EPSILON) * 100) / 100;
     };

@@ -62,7 +62,7 @@ export class TelegrafController {
             ctx.reply('Ort wird geladen...');
             let location = await this.covid19Region.findLocationForPoint([ctx.update.message.location.longitude, ctx.update.message.location.latitude]);
             if(!location){
-                loggerUserLevel.error(`${ctx.update.message.from.id} location could not be updated [${ctx.update.message.location.longitude}, ${ctx.update.message.location.latitude}] (long, lat)`);
+                loggerUserLevel.error(`${ctx.update.message.from.id} location could not be updated [${ctx.update.message.location.longitude}, ${ctx.update.message.location.latitude}] (long, lat)`, new Error());
                 ctx.reply(`Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
                 return;
             }

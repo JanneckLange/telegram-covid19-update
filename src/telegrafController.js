@@ -110,7 +110,7 @@ var TelegrafController = /** @class */ (function () {
                                     case 1:
                                         location = _a.sent();
                                         if (!location) {
-                                            logger_1.loggerUserLevel.error(ctx.update.message.from.id + " location could not be updated [" + ctx.update.message.location.longitude + ", " + ctx.update.message.location.latitude + "] (long, lat)");
+                                            logger_1.loggerUserLevel.error(ctx.update.message.from.id + " location could not be updated [" + ctx.update.message.location.longitude + ", " + ctx.update.message.location.latitude + "] (long, lat)", new Error());
                                             ctx.reply("Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.");
                                             return [2 /*return*/];
                                         }
