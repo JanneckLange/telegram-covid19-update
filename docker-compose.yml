@@ -13,6 +13,8 @@ services:
       - DB_URL=telegram-covid19-update-mongo
       - DB_NAME=telegram-update
       - DB_PORT=27017
+      - DB_USER=covid19
+      - DB_PASS=telegram-covid19-news-2020
     links:
       - telegram-covid19-update-mongo
     depends_on:
@@ -35,12 +37,16 @@ services:
     restart: always
     logging:
       driver: none
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=covid19
+      - MONGO_INITDB_ROOT_PASSWORD=telegram-covid19-news-2020
     expose:
       - "27019"
     ports:
       - "27019:27017"
     volumes:
       - "db:/data/covid19/telegram-update"
+    command: --auth
 
 volumes:
   db:

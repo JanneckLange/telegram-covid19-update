@@ -7,6 +7,8 @@ class Start {
     private readonly dbName;
     private readonly mongoPort;
     private readonly url;
+    private readonly mongoUser;
+    private readonly mongoPassword;
     private static readonly mongoOptions = {
         useNewUrlParser: true,
         useFindAndModify: false,
@@ -14,11 +16,13 @@ class Start {
         useCreateIndex: true,
     };
 
-    constructor(mongoUrl: string = process.env.DB_URL, dbName: string = process.env.DB_NAME, mongoPort: string = process.env.DB_PORT) {
+    constructor(mongoUrl: string = process.env.DB_URL, dbName: string = process.env.DB_NAME, mongoPort: string = process.env.DB_PORT, mongoUser: string = process.env.DB_USER, mongoPw: string = process.env.DB_PASS) {
         this.mongoUrl = mongoUrl;
         this.dbName = dbName;
         this.mongoPort = mongoPort;
-        this.url = `mongodb://${this.mongoUrl}:${this.mongoPort}/${this.dbName}`;
+        this.mongoUser = mongoUser;
+        this.mongoPassword = mongoPw;
+        this.url = `mongodb://${this.mongoUser}:${this.mongoPassword}@${this.mongoUrl}:${this.mongoPort}/${this.dbName}`;
 
         this.init();
         // this.handleShutdown();

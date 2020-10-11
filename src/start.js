@@ -39,14 +39,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose = require("mongoose");
 var telegrafController_1 = require("./telegrafController");
 var Start = /** @class */ (function () {
-    function Start(mongoUrl, dbName, mongoPort) {
+    function Start(mongoUrl, dbName, mongoPort, mongoUser, mongoPw) {
         if (mongoUrl === void 0) { mongoUrl = process.env.DB_URL; }
         if (dbName === void 0) { dbName = process.env.DB_NAME; }
         if (mongoPort === void 0) { mongoPort = process.env.DB_PORT; }
+        if (mongoUser === void 0) { mongoUser = process.env.DB_USER; }
+        if (mongoPw === void 0) { mongoPw = process.env.DB_PASS; }
         this.mongoUrl = mongoUrl;
         this.dbName = dbName;
         this.mongoPort = mongoPort;
-        this.url = "mongodb://" + this.mongoUrl + ":" + this.mongoPort + "/" + this.dbName;
+        this.mongoUser = mongoUser;
+        this.mongoPassword = mongoPw;
+        this.url = "mongodb://" + this.mongoUser + ":" + this.mongoPassword + "@" + this.mongoUrl + ":" + this.mongoPort + "/" + this.dbName;
         this.init();
         // this.handleShutdown();
     }
