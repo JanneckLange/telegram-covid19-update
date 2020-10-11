@@ -92,7 +92,7 @@ var Start = /** @class */ (function () {
     };
     Start.mongoOptions = {
         useNewUrlParser: true,
-        useFindAndModify: true,
+        useFindAndModify: false,
         useUnifiedTopology: true,
         useCreateIndex: true,
     };
