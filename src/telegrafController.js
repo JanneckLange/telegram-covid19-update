@@ -100,27 +100,74 @@ var TelegrafController = /** @class */ (function () {
                             });
                         }); });
                         this.telegraf.on('location', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                            var location;
+                            var loadingMsg, e_1, location, e_2, e_3, e_4;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         logger_1.loggerUserLevel.info(ctx.update.message.from.id + " send new location");
-                                        ctx.reply('Ort wird geladen...');
-                                        return [4 /*yield*/, this.covid19Region.findLocationForPoint([ctx.update.message.location.longitude, ctx.update.message.location.latitude])];
+                                        _a.label = 1;
                                     case 1:
-                                        location = _a.sent();
-                                        if (!location) {
-                                            logger_1.loggerUserLevel.error(ctx.update.message.from.id + " location could not be updated [" + ctx.update.message.location.longitude + ", " + ctx.update.message.location.latitude + "] (long, lat)", new Error());
-                                            ctx.reply("Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.");
-                                            return [2 /*return*/];
-                                        }
-                                        return [4 /*yield*/, this.follower.update(ctx.update.message.from.id, location.id)];
+                                        _a.trys.push([1, 3, , 5]);
+                                        return [4 /*yield*/, ctx.reply('Ort wird geladen...')];
                                     case 2:
-                                        _a.sent();
-                                        return [4 /*yield*/, ctx.reply("Dein Ort wurde auf " + location.name + " aktualisiert.")];
+                                        loadingMsg = _a.sent();
+                                        return [3 /*break*/, 5];
                                     case 3:
+                                        e_1 = _a.sent();
+                                        return [4 /*yield*/, this.telegram.sendMessage(ctx.update.message.from.id, 'Ort wird geladen...')];
+                                    case 4:
+                                        loadingMsg = _a.sent();
+                                        return [3 /*break*/, 5];
+                                    case 5:
+                                        location = null;
+                                        _a.label = 6;
+                                    case 6:
+                                        _a.trys.push([6, 8, , 9]);
+                                        return [4 /*yield*/, this.covid19Region.findLocationForPoint([ctx.update.message.location.longitude, ctx.update.message.location.latitude])];
+                                    case 7:
+                                        location = _a.sent();
+                                        return [3 /*break*/, 9];
+                                    case 8:
+                                        e_2 = _a.sent();
+                                        return [3 /*break*/, 9];
+                                    case 9:
+                                        if (!!location) return [3 /*break*/, 15];
+                                        logger_1.loggerUserLevel.error(ctx.update.message.from.id + " location could not be updated [" + ctx.update.message.location.longitude + ", " + ctx.update.message.location.latitude + "] (long, lat)", new Error());
+                                        _a.label = 10;
+                                    case 10:
+                                        _a.trys.push([10, 12, , 14]);
+                                        return [4 /*yield*/, ctx.reply("Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.")];
+                                    case 11:
+                                        _a.sent();
+                                        return [3 /*break*/, 14];
+                                    case 12:
+                                        e_3 = _a.sent();
+                                        return [4 /*yield*/, this.telegram.sendMessage(ctx.update.message.from.id, "Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.")];
+                                    case 13:
+                                        _a.sent();
+                                        return [3 /*break*/, 14];
+                                    case 14: return [2 /*return*/];
+                                    case 15: return [4 /*yield*/, this.follower.update(ctx.update.message.from.id, location.id)];
+                                    case 16:
                                         _a.sent();
                                         logger_1.loggerUserLevel.info(ctx.update.message.from.id + " location updated to " + location.id);
+                                        _a.label = 17;
+                                    case 17:
+                                        _a.trys.push([17, 19, , 22]);
+                                        return [4 /*yield*/, this.telegram.editMessageText(ctx.update.message.from.id, loadingMsg.message_id, null, "Dein Ort wurde auf " + location.name + " aktualisiert.")];
+                                    case 18:
+                                        _a.sent();
+                                        return [3 /*break*/, 22];
+                                    case 19:
+                                        e_4 = _a.sent();
+                                        return [4 /*yield*/, this.telegram.deleteMessage(ctx.update.message.from.id, loadingMsg.message_id)];
+                                    case 20:
+                                        _a.sent();
+                                        return [4 /*yield*/, ctx.reply("Dein Ort wurde auf " + location.name + " aktualisiert.")];
+                                    case 21:
+                                        _a.sent();
+                                        return [3 /*break*/, 22];
+                                    case 22:
                                         this.sendUpdate(ctx.update.message.from.id, location.id);
                                         return [2 /*return*/];
                                 }
@@ -143,8 +190,9 @@ var TelegrafController = /** @class */ (function () {
                         _b = (_a = this.telegram).sendMessage;
                         _c = [chatId];
                         return [4 /*yield*/, this.covid19Region.getOneLocation(regionId)];
-                    case 1:
-                        _b.apply(_a, _c.concat([(_d.sent()).cases7_per_100k + " F\u00E4lle auf 100.000 Einwohner in den letzten 7 Tagen."]));
+                    case 1: return [4 /*yield*/, _b.apply(_a, _c.concat([(_d.sent()).cases7_per_100k + " F\u00E4lle auf 100.000 Einwohner in den letzten 7 Tagen."]))];
+                    case 2:
+                        _d.sent();
                         return [2 /*return*/];
                 }
             });

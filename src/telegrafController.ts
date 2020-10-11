@@ -42,7 +42,7 @@ export class TelegrafController {
             loggerUserLevel.info(`${ctx.update.message.from.id} command 'quelle'`);
             ctx.replyWithHTML(
                 "Die Daten sind die „Fallzahlen in Deutschland“ des <a href='https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Fallzahlen.html'>Robert Koch-Institut (RKI)</a> \n\n" +
-                "Quellenvermerk: Robert Koch-Institut (RKI), dl-de/by-2-0 \n"+
+                "Quellenvermerk: Robert Koch-Institut (RKI), dl-de/by-2-0 \n" +
                 "API: <a href='https://npgeo-corona-npgeo-de.hub.arcgis.com/datasets/dd4580c810204019a7b8eb3e0b329dd6_0'>NPGEO Corona</a>",
             );
         });
@@ -59,16 +59,40 @@ export class TelegrafController {
 
         this.telegraf.on('location', async ctx => {
             loggerUserLevel.info(`${ctx.update.message.from.id} send new location`);
-            ctx.reply('Ort wird geladen...');
-            let location = await this.covid19Region.findLocationForPoint([ctx.update.message.location.longitude, ctx.update.message.location.latitude]);
-            if(!location){
+
+            let loadingMsg;
+            try {
+                loadingMsg = await ctx.reply('Ort wird geladen...');
+            } catch (e) {
+                loadingMsg = await this.telegram.sendMessage(ctx.update.message.from.id, 'Ort wird geladen...');
+            }
+
+            let location = null;
+            try {
+                location = await this.covid19Region.findLocationForPoint([ctx.update.message.location.longitude, ctx.update.message.location.latitude]);
+            } catch (e) {
+            }
+
+            if (!location) {
                 loggerUserLevel.error(`${ctx.update.message.from.id} location could not be updated [${ctx.update.message.location.longitude}, ${ctx.update.message.location.latitude}] (long, lat)`, new Error());
-                ctx.reply(`Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
+                try {
+                    await ctx.reply(`Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
+                } catch (e) {
+                    await this.telegram.sendMessage(ctx.update.message.from.id, `Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
+                }
                 return;
             }
+
             await this.follower.update(ctx.update.message.from.id, location.id);
-            await ctx.reply(`Dein Ort wurde auf ${location.name} aktualisiert.`);
             loggerUserLevel.info(`${ctx.update.message.from.id} location updated to ${location.id}`);
+
+            try {
+                await this.telegram.editMessageText(ctx.update.message.from.id, loadingMsg.message_id, null, `Dein Ort wurde auf ${location.name} aktualisiert.`);
+            } catch (e) {
+                await this.telegram.deleteMessage(ctx.update.message.from.id, loadingMsg.message_id);
+                await ctx.reply(`Dein Ort wurde auf ${location.name} aktualisiert.`);
+            }
+
             this.sendUpdate(ctx.update.message.from.id, location.id);
         });
 
@@ -76,7 +100,7 @@ export class TelegrafController {
     }
 
     async sendUpdate(chatId: string, regionId: string) {
-        this.telegram.sendMessage(chatId, `${(await this.covid19Region.getOneLocation(regionId)).cases7_per_100k} Fälle auf 100.000 Einwohner in den letzten 7 Tagen.`);
+        await this.telegram.sendMessage(chatId, `${(await this.covid19Region.getOneLocation(regionId)).cases7_per_100k} Fälle auf 100.000 Einwohner in den letzten 7 Tagen.`);
     }
 
     async scheduleUpdates() {
