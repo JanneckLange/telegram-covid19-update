@@ -52,7 +52,6 @@ var Start = /** @class */ (function () {
         this.mongoPassword = mongoPw;
         this.url = "mongodb://" + this.mongoUser + ":" + this.mongoPassword + "@" + this.mongoUrl + ":" + this.mongoPort + "/" + this.dbName;
         this.init();
-        // this.handleShutdown();
     }
     Start.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -65,31 +64,6 @@ var Start = /** @class */ (function () {
                     console.error(err);
                 });
                 new telegrafController_1.TelegrafController();
-                return [2 /*return*/];
-            });
-        });
-    };
-    Start.prototype.handleShutdown = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var signals;
-            return __generator(this, function (_a) {
-                process.stdin.resume();
-                signals = {
-                    'uncaughtException': -1,
-                    'exit': 0,
-                    'SIGHUP': 1,
-                    'SIGINT': 2,
-                    'SIGTERM': 15,
-                    'SIGUSR1': 98,
-                    'SIGUSR2': 98
-                };
-                Object.keys(signals).forEach(function (signal) {
-                    process.on(signal, function () {
-                        console.log("process received a " + signal + " signal");
-                        console.log('Exit with ' + signals[signal]);
-                        process.exit();
-                    });
-                });
                 return [2 /*return*/];
             });
         });

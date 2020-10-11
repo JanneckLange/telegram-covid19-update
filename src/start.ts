@@ -25,7 +25,6 @@ class Start {
         this.url = `mongodb://${this.mongoUser}:${this.mongoPassword}@${this.mongoUrl}:${this.mongoPort}/${this.dbName}`;
 
         this.init();
-        // this.handleShutdown();
     }
 
     async init() {
@@ -37,27 +36,6 @@ class Start {
             console.error(err);
         });
         new TelegrafController();
-    }
-
-    async handleShutdown() {
-        process.stdin.resume();
-
-        const signals = {
-            'uncaughtException': -1,
-            'exit': 0,
-            'SIGHUP': 1,
-            'SIGINT': 2,
-            'SIGTERM': 15,
-            'SIGUSR1': 98,
-            'SIGUSR2': 98
-        };
-        Object.keys(signals).forEach((signal) => {
-            process.on(signal, () => {
-                console.log(`process received a ${signal} signal`);
-                console.log('Exit with ' + signals[signal]);
-                process.exit();
-            });
-        });
     }
 }
 
