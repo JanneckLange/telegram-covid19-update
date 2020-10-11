@@ -183,16 +183,27 @@ var TelegrafController = /** @class */ (function () {
     };
     TelegrafController.prototype.sendUpdate = function (chatId, regionId) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b, _c;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
-                    case 0:
-                        _b = (_a = this.telegram).sendMessage;
-                        _c = [chatId];
-                        return [4 /*yield*/, this.covid19Region.getOneLocation(regionId)];
-                    case 1: return [4 /*yield*/, _b.apply(_a, _c.concat([(_d.sent()).cases7_per_100k + " F\u00E4lle auf 100.000 Einwohner in den letzten 7 Tagen."]))];
+            var cases, warningMsg;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.covid19Region.getOneLocation(regionId)];
+                    case 1:
+                        cases = (_a.sent()).cases7_per_100k;
+                        if (cases < 20) {
+                            warningMsg = '🟢 Aktuell ist alles im grünen Bereich ☺. Sei aber trotzdem Vorsichtig!';
+                        }
+                        else if (cases < 35) {
+                            warningMsg = '🟡 Es gibt einige Fälle in deiner Region 😧. Behalte die Ampel im Blick.';
+                        }
+                        else if (cases < 50) {
+                            warningMsg = '🟠 Es gibt aktuell viele Fälle in deiner Region 😷. Behalte die Nachrichten im Blick, es gibt vermutlich Einschränkungen.';
+                        }
+                        else {
+                            warningMsg = '🔴 Es gibt sehr viele Fälle in deiner Region 🏘🚷. Bleibe am besten zu Hause und verfolge aktiv die Nachrichten. In deiner Region gibt es sehr wahrscheinlich Einschränkungen';
+                        }
+                        return [4 /*yield*/, this.telegram.sendMessage(chatId, cases + " F\u00E4lle auf 100.000 Einwohner in den letzten 7 Tagen.\n\n" + warningMsg)];
                     case 2:
-                        _d.sent();
+                        _a.sent();
                         return [2 /*return*/];
                 }
             });

@@ -100,7 +100,19 @@ export class TelegrafController {
     }
 
     async sendUpdate(chatId: string, regionId: string) {
-        await this.telegram.sendMessage(chatId, `${(await this.covid19Region.getOneLocation(regionId)).cases7_per_100k} Fälle auf 100.000 Einwohner in den letzten 7 Tagen.`);
+        const cases = (await this.covid19Region.getOneLocation(regionId)).cases7_per_100k;
+        let warningMsg;
+
+        if (cases < 20) {
+            warningMsg = '🟢 Aktuell ist alles im grünen Bereich ☺. Sei aber trotzdem Vorsichtig!';
+        } else if (cases < 35) {
+            warningMsg = '🟡 Es gibt einige Fälle in deiner Region 😧. Behalte die Ampel im Blick.';
+        } else if (cases < 50) {
+            warningMsg = '🟠 Es gibt aktuell viele Fälle in deiner Region 😷. Behalte die Nachrichten im Blick, es gibt vermutlich Einschränkungen.';
+        } else {
+            warningMsg = '🔴 Es gibt sehr viele Fälle in deiner Region 🏘🚷. Bleibe am besten zu Hause und verfolge aktiv die Nachrichten. In deiner Region gibt es sehr wahrscheinlich Einschränkungen';
+        }
+        await this.telegram.sendMessage(chatId, `${cases} Fälle auf 100.000 Einwohner in den letzten 7 Tagen.\n\n${warningMsg}`);
     }
 
     async scheduleUpdates() {
