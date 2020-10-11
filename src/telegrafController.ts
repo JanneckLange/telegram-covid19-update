@@ -25,6 +25,7 @@ export class TelegrafController {
 
         this.main();
         this.scheduleUpdates();
+        this.adminUpdate();
     }
 
     async main() {
@@ -112,7 +113,24 @@ export class TelegrafController {
         } else {
             warningMsg = '🔴 Es gibt sehr viele Fälle in deiner Region 🏘🚷. Bleibe am besten zu Hause und verfolge aktiv die Nachrichten. In deiner Region gibt es sehr wahrscheinlich Einschränkungen';
         }
-        await this.telegram.sendMessage(chatId, `${cases} Fälle auf 100.000 Einwohner in den letzten 7 Tagen.\n\n${warningMsg}`);
+        try {
+            await this.telegram.sendMessage(chatId, `${cases} Fälle auf 100.000 Einwohner in den letzten 7 Tagen.\n\n${warningMsg}`);
+        } catch (e) {
+            if(e.code === 403){
+                loggerUserLevel.info(`${chatId} removed User - ${e.description}`);
+                await this.follower.remove(chatId);
+            }else{
+                loggerUserLevel.error('could not send message to user', e);
+            }
+        }
+    }
+
+    async adminUpdate() {
+        try {
+            await this.telegram.sendMessage(14417823, `Der Bot hat aktuell ${await this.follower.followerCount()} Abbonenten.`);
+        } catch (e) {
+            loggerUserLevel.error('could not send admin update', e);
+        }
     }
 
     async scheduleUpdates() {
@@ -124,6 +142,7 @@ export class TelegrafController {
             follower.forEach(follower => {
                 this.sendUpdate(follower.telegramId, follower.regionId);
             });
+            this.adminUpdate();
         });
         job.start();
     }

@@ -29,4 +29,12 @@ export class FollowerController {
     public async remove(id: string): Promise<void> {
         await FollowerModel.findOneAndDelete({telegramId: id});
     }
+
+    public async followerCount():Promise<number>{
+        try {
+            return (await FollowerModel.find()).length;
+        } catch (err) {
+            console.error('Caught error', err);
+        }
+    }
 }

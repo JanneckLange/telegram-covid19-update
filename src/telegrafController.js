@@ -53,6 +53,7 @@ var TelegrafController = /** @class */ (function () {
         this.follower = new followerController_1.FollowerController();
         this.main();
         this.scheduleUpdates();
+        this.adminUpdate();
     }
     TelegrafController.prototype.main = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -183,7 +184,7 @@ var TelegrafController = /** @class */ (function () {
     };
     TelegrafController.prototype.sendUpdate = function (chatId, regionId) {
         return __awaiter(this, void 0, void 0, function () {
-            var cases, warningMsg;
+            var cases, warningMsg, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.covid19Region.getOneLocation(regionId)];
@@ -201,10 +202,50 @@ var TelegrafController = /** @class */ (function () {
                         else {
                             warningMsg = '🔴 Es gibt sehr viele Fälle in deiner Region 🏘🚷. Bleibe am besten zu Hause und verfolge aktiv die Nachrichten. In deiner Region gibt es sehr wahrscheinlich Einschränkungen';
                         }
-                        return [4 /*yield*/, this.telegram.sendMessage(chatId, cases + " F\u00E4lle auf 100.000 Einwohner in den letzten 7 Tagen.\n\n" + warningMsg)];
+                        _a.label = 2;
                     case 2:
+                        _a.trys.push([2, 4, , 8]);
+                        return [4 /*yield*/, this.telegram.sendMessage(chatId, cases + " F\u00E4lle auf 100.000 Einwohner in den letzten 7 Tagen.\n\n" + warningMsg)];
+                    case 3:
                         _a.sent();
-                        return [2 /*return*/];
+                        return [3 /*break*/, 8];
+                    case 4:
+                        e_5 = _a.sent();
+                        if (!(e_5.code === 403)) return [3 /*break*/, 6];
+                        logger_1.loggerUserLevel.info(chatId + " removed User - " + e_5.description);
+                        return [4 /*yield*/, this.follower.remove(chatId)];
+                    case 5:
+                        _a.sent();
+                        return [3 /*break*/, 7];
+                    case 6:
+                        logger_1.loggerUserLevel.error('could not send message to user', e_5);
+                        _a.label = 7;
+                    case 7: return [3 /*break*/, 8];
+                    case 8: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    TelegrafController.prototype.adminUpdate = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, _c, _d, e_6;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        _e.trys.push([0, 3, , 4]);
+                        _b = (_a = this.telegram).sendMessage;
+                        _c = [14417823];
+                        _d = "Der Bot hat aktuell ";
+                        return [4 /*yield*/, this.follower.followerCount()];
+                    case 1: return [4 /*yield*/, _b.apply(_a, _c.concat([_d + (_e.sent()) + " Abbonenten."]))];
+                    case 2:
+                        _e.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_6 = _e.sent();
+                        logger_1.loggerUserLevel.error('could not send admin update', e_6);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -228,6 +269,7 @@ var TelegrafController = /** @class */ (function () {
                                 follower.forEach(function (follower) {
                                     _this.sendUpdate(follower.telegramId, follower.regionId);
                                 });
+                                this.adminUpdate();
                                 return [2 /*return*/];
                         }
                     });
