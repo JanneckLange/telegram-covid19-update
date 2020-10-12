@@ -132,20 +132,21 @@ var TelegrafController = /** @class */ (function () {
                         return [4 /*yield*/, this.telegram.sendMessage(userId, 'Als was möchtest du diesen Ort festlegen?', {
                                 reply_markup: {
                                     inline_keyboard: [[
-                                            { text: 'Home 🏠', callback_data: "location-0-" + userId },
-                                            { text: 'Work 🏢', callback_data: "location-1-" + userId }
+                                            { text: 'Home 🏠', callback_data: "location-0-" + userId + "-" + point[0] + "-" + point[1] },
+                                            { text: 'Work 🏢', callback_data: "location-1-" + userId + "-" + point[0] + "-" + point[1] }
                                         ]]
                                 }
                             })];
                     case 1:
                         telegramMsg = _a.sent();
                         this.telegraf.action(/location-\d/, function (ctxAction) { return __awaiter(_this, void 0, void 0, function () {
-                            var selectedLocation, e_1;
-                            var _this = this;
+                            var selectedLocation, subPoint, e_1, location, e_2, e_3, e_4;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         selectedLocation = +(ctxAction['update']['callback_query']['data'].split('-')[1]);
+                                        subPoint = [+(ctxAction['update']['callback_query']['data'].split('-')[3]), +(ctxAction['update']['callback_query']['data'].split('-')[4])];
+                                        console.log(subPoint);
                                         _a.label = 1;
                                     case 1:
                                         _a.trys.push([1, 3, , 6]);
@@ -162,57 +163,63 @@ var TelegrafController = /** @class */ (function () {
                                     case 5:
                                         telegramMsg = _a.sent();
                                         return [3 /*break*/, 6];
-                                    case 6: return [4 /*yield*/, ctx.session.locationPromisse.then(function (location) { return __awaiter(_this, void 0, void 0, function () {
-                                            var e_2, e_3;
-                                            return __generator(this, function (_a) {
-                                                switch (_a.label) {
-                                                    case 0:
-                                                        if (!!location) return [3 /*break*/, 6];
-                                                        logger_1.loggerUserLevel.error(userId + " location could not be updated " + point + " (long, lat)", new Error());
-                                                        this.sendAdminMsg(userId + " location could not be updated " + point + " (long, lat)");
-                                                        _a.label = 1;
-                                                    case 1:
-                                                        _a.trys.push([1, 3, , 5]);
-                                                        return [4 /*yield*/, ctx.reply("Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.")];
-                                                    case 2:
-                                                        _a.sent();
-                                                        return [3 /*break*/, 5];
-                                                    case 3:
-                                                        e_2 = _a.sent();
-                                                        return [4 /*yield*/, this.telegram.sendMessage(userId, "Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.")];
-                                                    case 4:
-                                                        _a.sent();
-                                                        return [3 /*break*/, 5];
-                                                    case 5: return [2 /*return*/];
-                                                    case 6: return [4 /*yield*/, this.follower.update(userId, location.id, selectedLocation)];
-                                                    case 7:
-                                                        _a.sent();
-                                                        logger_1.loggerUserLevel.info(userId + " " + (selectedLocation === 0 ? 'Home' : 'Work') + " location updated to " + location.id);
-                                                        _a.label = 8;
-                                                    case 8:
-                                                        _a.trys.push([8, 10, , 13]);
-                                                        return [4 /*yield*/, this.telegram.editMessageText(userId, telegramMsg.message_id, null, (selectedLocation === 0 ? 'Home' : 'Work') + " wurde auf " + location.name + " aktualisiert.")];
-                                                    case 9:
-                                                        _a.sent();
-                                                        return [3 /*break*/, 13];
-                                                    case 10:
-                                                        e_3 = _a.sent();
-                                                        return [4 /*yield*/, this.telegram.deleteMessage(userId, telegramMsg.message_id)];
-                                                    case 11:
-                                                        _a.sent();
-                                                        return [4 /*yield*/, ctx.reply((selectedLocation === 0 ? 'Home' : 'Work') + " wurde auf " + location.name + " aktualisiert.")];
-                                                    case 12:
-                                                        _a.sent();
-                                                        return [3 /*break*/, 13];
-                                                    case 13:
-                                                        ctx.session.locationPromisse = null;
-                                                        this.sendUpdate(userId, location.id, selectedLocation);
-                                                        return [2 /*return*/];
-                                                }
-                                            });
-                                        }); })];
+                                    case 6:
+                                        _a.trys.push([6, 8, , 10]);
+                                        if (!ctx.session.locationPromisse) {
+                                            throw new Error();
+                                        }
+                                        return [4 /*yield*/, ctx.session.locationPromisse];
                                     case 7:
+                                        location = _a.sent();
+                                        return [3 /*break*/, 10];
+                                    case 8:
+                                        e_2 = _a.sent();
+                                        return [4 /*yield*/, this.covid19Region.findLocationForPoint(subPoint)];
+                                    case 9:
+                                        location = _a.sent();
+                                        return [3 /*break*/, 10];
+                                    case 10:
+                                        console.log(location);
+                                        if (!!location) return [3 /*break*/, 16];
+                                        logger_1.loggerUserLevel.error(userId + " location could not be updated " + point + " (long, lat)", new Error());
+                                        this.sendAdminMsg(userId + " location could not be updated " + point + " (long, lat)");
+                                        _a.label = 11;
+                                    case 11:
+                                        _a.trys.push([11, 13, , 15]);
+                                        return [4 /*yield*/, ctx.reply("Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.")];
+                                    case 12:
                                         _a.sent();
+                                        return [3 /*break*/, 15];
+                                    case 13:
+                                        e_3 = _a.sent();
+                                        return [4 /*yield*/, this.telegram.sendMessage(userId, "Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.")];
+                                    case 14:
+                                        _a.sent();
+                                        return [3 /*break*/, 15];
+                                    case 15: return [2 /*return*/];
+                                    case 16: return [4 /*yield*/, this.follower.update(userId, location.id, selectedLocation)];
+                                    case 17:
+                                        _a.sent();
+                                        logger_1.loggerUserLevel.info(userId + " " + (selectedLocation === 0 ? 'Home' : 'Work') + " location updated to " + location.id);
+                                        _a.label = 18;
+                                    case 18:
+                                        _a.trys.push([18, 20, , 23]);
+                                        return [4 /*yield*/, this.telegram.editMessageText(userId, telegramMsg.message_id, null, (selectedLocation === 0 ? 'Home' : 'Work') + " wurde auf " + location.name + " aktualisiert.")];
+                                    case 19:
+                                        _a.sent();
+                                        return [3 /*break*/, 23];
+                                    case 20:
+                                        e_4 = _a.sent();
+                                        return [4 /*yield*/, this.telegram.deleteMessage(userId, telegramMsg.message_id)];
+                                    case 21:
+                                        _a.sent();
+                                        return [4 /*yield*/, ctx.reply((selectedLocation === 0 ? 'Home' : 'Work') + " wurde auf " + location.name + " aktualisiert.")];
+                                    case 22:
+                                        _a.sent();
+                                        return [3 /*break*/, 23];
+                                    case 23:
+                                        ctx.session.locationPromisse = null;
+                                        this.sendUpdate(userId, location.id, selectedLocation);
                                         return [2 /*return*/];
                                 }
                             });
@@ -224,7 +231,7 @@ var TelegrafController = /** @class */ (function () {
     };
     TelegrafController.prototype.sendUpdate = function (chatId, regionId, regionType) {
         return __awaiter(this, void 0, void 0, function () {
-            var cases, warningMsg, colorEmoji, e_4;
+            var cases, warningMsg, colorEmoji, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.covid19Region.getOneLocation(regionId)];
@@ -254,15 +261,15 @@ var TelegrafController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 8];
                     case 4:
-                        e_4 = _a.sent();
-                        if (!(e_4.code === 403)) return [3 /*break*/, 6];
-                        logger_1.loggerUserLevel.info(chatId + " removed User - " + e_4.description);
+                        e_5 = _a.sent();
+                        if (!(e_5.code === 403)) return [3 /*break*/, 6];
+                        logger_1.loggerUserLevel.info(chatId + " removed User - " + e_5.description);
                         return [4 /*yield*/, this.follower.remove(chatId)];
                     case 5:
                         _a.sent();
                         return [3 /*break*/, 7];
                     case 6:
-                        logger_1.loggerUserLevel.error('could not send message to user', e_4);
+                        logger_1.loggerUserLevel.error('could not send message to user', e_5);
                         _a.label = 7;
                     case 7: return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
@@ -272,7 +279,7 @@ var TelegrafController = /** @class */ (function () {
     };
     TelegrafController.prototype.adminUpdate = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b, _c, _d, e_5;
+            var _a, _b, _c, _d, e_6;
             return __generator(this, function (_e) {
                 switch (_e.label) {
                     case 0:
@@ -286,8 +293,8 @@ var TelegrafController = /** @class */ (function () {
                         _e.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        e_5 = _e.sent();
-                        logger_1.loggerUserLevel.error('could not send admin update', e_5);
+                        e_6 = _e.sent();
+                        logger_1.loggerUserLevel.error('could not send admin update', e_6);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }

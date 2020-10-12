@@ -79,15 +79,16 @@ export class TelegrafController {
         let telegramMsg = await this.telegram.sendMessage(userId, 'Als was möchtest du diesen Ort festlegen?', {
             reply_markup: {
                 inline_keyboard: [[
-                    {text: 'Home 🏠', callback_data: `location-0-${userId}`},
-                    {text: 'Work 🏢', callback_data: `location-1-${userId}`}
+                    {text: 'Home 🏠', callback_data: `location-0-${userId}-${point[0]}-${point[1]}`},
+                    {text: 'Work 🏢', callback_data: `location-1-${userId}-${point[0]}-${point[1]}`}
                 ]]
             }
         });
 
         this.telegraf.action(/location-\d/, async (ctxAction) => {
             let selectedLocation: number = +(ctxAction['update']['callback_query']['data'].split('-')[1]);
-
+            const subPoint: [number, number] = [+(ctxAction['update']['callback_query']['data'].split('-')[3]), +(ctxAction['update']['callback_query']['data'].split('-')[4])];
+            console.log(subPoint)
             // edit message, delete and send new message if edit fail
             try {
                 telegramMsg = await this.telegram.editMessageText(userId, telegramMsg.message_id, null, 'Ort wird geladen...');
@@ -96,32 +97,40 @@ export class TelegrafController {
                 telegramMsg = await ctx.reply('Ort wird geladen...');
             }
 
-            await ctx.session.locationPromisse.then(async location => {
-                // location not found
-                if (!location) {
-                    loggerUserLevel.error(`${userId} location could not be updated ${point} (long, lat)`, new Error());
-                    this.sendAdminMsg(`${userId} location could not be updated ${point} (long, lat)`)
-                    try {
-                        await ctx.reply(`Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
-                    } catch (e) {
-                        await this.telegram.sendMessage(userId, `Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
-                    }
-                    return;
+            let location;
+            try {
+                if(!ctx.session.locationPromisse){
+                    throw new Error();
                 }
-
-                await this.follower.update(userId, location.id, selectedLocation);
-                loggerUserLevel.info(`${userId} ${selectedLocation === 0 ? 'Home' : 'Work'} location updated to ${location.id}`);
-
-                // edit message, delete and send new message if edit fail
+                location = await ctx.session.locationPromisse;
+            } catch (e) {
+                location = await this.covid19Region.findLocationForPoint(subPoint)
+            }
+            console.log(location);
+            // location not found
+            if (!location) {
+                loggerUserLevel.error(`${userId} location could not be updated ${point} (long, lat)`, new Error());
+                this.sendAdminMsg(`${userId} location could not be updated ${point} (long, lat)`)
                 try {
-                    await this.telegram.editMessageText(userId, telegramMsg.message_id, null, `${selectedLocation === 0 ? 'Home' : 'Work'} wurde auf ${location.name} aktualisiert.`);
+                    await ctx.reply(`Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
                 } catch (e) {
-                    await this.telegram.deleteMessage(userId, telegramMsg.message_id);
-                    await ctx.reply(`${selectedLocation === 0 ? 'Home' : 'Work'} wurde auf ${location.name} aktualisiert.`);
+                    await this.telegram.sendMessage(userId, `Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
                 }
-                ctx.session.locationPromisse = null;
-                this.sendUpdate(userId, location.id, selectedLocation);
-            })
+                return;
+            }
+
+            await this.follower.update(userId, location.id, selectedLocation);
+            loggerUserLevel.info(`${userId} ${selectedLocation === 0 ? 'Home' : 'Work'} location updated to ${location.id}`);
+
+            // edit message, delete and send new message if edit fail
+            try {
+                await this.telegram.editMessageText(userId, telegramMsg.message_id, null, `${selectedLocation === 0 ? 'Home' : 'Work'} wurde auf ${location.name} aktualisiert.`);
+            } catch (e) {
+                await this.telegram.deleteMessage(userId, telegramMsg.message_id);
+                await ctx.reply(`${selectedLocation === 0 ? 'Home' : 'Work'} wurde auf ${location.name} aktualisiert.`);
+            }
+            ctx.session.locationPromisse = null;
+            this.sendUpdate(userId, location.id, selectedLocation);
         });
     }
 
