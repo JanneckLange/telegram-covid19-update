@@ -140,7 +140,7 @@ var TelegrafController = /** @class */ (function () {
                     case 1:
                         telegramMsg = _a.sent();
                         this.telegraf.action(/location-\d/, function (ctxAction) { return __awaiter(_this, void 0, void 0, function () {
-                            var selectedLocation, subPoint, e_1, location, e_2, e_3, e_4;
+                            var selectedLocation, subPoint, e_1, location, e_2, msg, e_3, e_4;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
@@ -183,16 +183,17 @@ var TelegrafController = /** @class */ (function () {
                                         if (!!location) return [3 /*break*/, 16];
                                         logger_1.loggerUserLevel.error(userId + " location could not be updated " + point + " (long, lat)", new Error());
                                         this.sendAdminMsg(userId + " location could not be updated " + point + " (long, lat)");
+                                        msg = "Der Standort konnte keiner Region in Deutschland zugeordnet werden. Versuche einen anderen Standort. F\u00FCr Standorte au\u00DFerhalb von Deutschland habe ich leider noch keine Daten.";
                                         _a.label = 11;
                                     case 11:
                                         _a.trys.push([11, 13, , 15]);
-                                        return [4 /*yield*/, ctx.reply("Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.")];
+                                        return [4 /*yield*/, ctx.reply(msg)];
                                     case 12:
                                         _a.sent();
                                         return [3 /*break*/, 15];
                                     case 13:
                                         e_3 = _a.sent();
-                                        return [4 /*yield*/, this.telegram.sendMessage(userId, "Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.")];
+                                        return [4 /*yield*/, this.telegram.sendMessage(userId, msg)];
                                     case 14:
                                         _a.sent();
                                         return [3 /*break*/, 15];

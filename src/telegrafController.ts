@@ -110,11 +110,12 @@ export class TelegrafController {
             // location not found
             if (!location) {
                 loggerUserLevel.error(`${userId} location could not be updated ${point} (long, lat)`, new Error());
-                this.sendAdminMsg(`${userId} location could not be updated ${point} (long, lat)`)
+                this.sendAdminMsg(`${userId} location could not be updated ${point} (long, lat)`);
+                let msg = `Der Standort konnte keiner Region in Deutschland zugeordnet werden. Versuche einen anderen Standort. Für Standorte außerhalb von Deutschland habe ich leider noch keine Daten.`;
                 try {
-                    await ctx.reply(`Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
+                    await ctx.reply(msg);
                 } catch (e) {
-                    await this.telegram.sendMessage(userId, `Der Standort konnte keiner Region zugeordnet werden. Versuche einen anderen Standort.`);
+                    await this.telegram.sendMessage(userId, msg);
                 }
                 return;
             }
