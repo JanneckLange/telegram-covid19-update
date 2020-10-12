@@ -33,6 +33,7 @@ export class TelegrafController {
 
         this.telegraf.start(async ctx => {
             ctx.session.locationPromisse = null;
+            this.sendAdminMsg(`${ctx.update.message.from.first_name} hat den Bot Aboniert`);
             loggerUserLevel.info(`${ctx.update.message.from.id} new User`);
             ctx.reply(`Willkommen ${ctx.update.message.from.first_name},\n\n1️⃣ Sende mir deinen Standort oder den Standort der Region zu, von der du Covid19 Statistiken erhalten möchtest.\n\n2️⃣ Erhalte täglich ein Update.\n\n✅ Du kannst die Region jederzeit ändern.`);
             await this.follower.create(ctx.update.message.from.id, ctx.update.message.from.first_name ? ctx.update.message.from.first_name : ctx.update.message.from.username);
@@ -66,42 +67,25 @@ export class TelegrafController {
             this.locationUpdateHandling(ctx);
         });
 
-        await this.telegraf.launch();
-    }
+        /**
+         * /location-homeOrWork-userId-long-lat
+         */
+        this.telegraf.action(/location-.*/, async (ctx) => {
+            let selectedLocation: number = +(ctx['update']['callback_query']['data'].split('-')[1]);
+            let userId: number = +(ctx['update']['callback_query']['data'].split('-')[2]);
+            const point: [number, number] = [+(ctx['update']['callback_query']['data'].split('-')[3]), +(ctx['update']['callback_query']['data'].split('-')[4])];
+            loggerUserLevel.info(`${userId} clicked ${ctx['update']['callback_query']['data']}`);
+            let telegramMsg;
 
-    async locationUpdateHandling(ctx) {
-        const userId = ctx.update.message.from.id;
-        const point: [number, number] = [ctx.update.message.location.longitude, ctx.update.message.location.latitude];
-        loggerUserLevel.info(`${userId} send new location: ${point}`);
-
-        ctx.session.locationPromisse = this.covid19Region.findLocationForPoint(point);
-
-        let telegramMsg = await this.telegram.sendMessage(userId, 'Als was möchtest du diesen Ort festlegen?', {
-            reply_markup: {
-                inline_keyboard: [[
-                    {text: 'Home 🏠', callback_data: `location-0-${userId}-${point[0]}-${point[1]}`},
-                    {text: 'Work 🏢', callback_data: `location-1-${userId}-${point[0]}-${point[1]}`}
-                ]]
-            }
-        });
-
-        this.telegraf.action(/location-\d/, async (ctxAction) => {
-            loggerUserLevel.info(`${userId} clicked ${ctxAction['update']['callback_query']['data']}`);
-            let selectedLocation: number = +(ctxAction['update']['callback_query']['data'].split('-')[1]);
-            const subPoint: [number, number] = [+(ctxAction['update']['callback_query']['data'].split('-')[3]), +(ctxAction['update']['callback_query']['data'].split('-')[4])];
-
-            // edit message, delete and send new message if edit fail
+            let msg = "Ort wird geladen. Das kann bis zu 30 Sekunden dauern. Bitte warte solange.";
             try {
-                telegramMsg = await this.telegram.editMessageText(userId, telegramMsg.message_id, null, 'Ort wird geladen...');
-            } catch (e) {
-                loggerUserLevel.warn("could not update (1) message: " + telegramMsg.message_id);
-                try {
-                    await this.telegram.deleteMessage(userId, telegramMsg.message_id);
-                } catch (e) {
-                    loggerUserLevel.warn("could not delete (1) message: " + telegramMsg.message_id);
+                if (ctx.session.locationDesisionMsg) {
+                    telegramMsg = await this.telegram.editMessageText(userId, ctx.session.locationDesisionMsg, null, msg);
                 }
-                telegramMsg = await ctx.reply('Ort wird geladen. Das kann bis zu 30 Sekunden dauern.');
+            } catch (e) {
+                telegramMsg = await ctx.reply(msg);
             }
+
 
             let location;
             try {
@@ -110,7 +94,8 @@ export class TelegrafController {
                 }
                 location = await ctx.session.locationPromisse;
             } catch (e) {
-                location = await this.covid19Region.findLocationForPoint(subPoint)
+                loggerUserLevel.info('Promisse not in session load again');
+                location = await this.covid19Region.findLocationForPoint(point)
             }
             console.log(location);
             // location not found
@@ -133,16 +118,36 @@ export class TelegrafController {
             try {
                 await this.telegram.editMessageText(userId, telegramMsg.message_id, null, `${selectedLocation === 0 ? 'Home' : 'Work'} wurde auf ${location.name} aktualisiert.`);
             } catch (e) {
-                loggerUserLevel.warn("could not update (2) message: " + telegramMsg.message_id);
+                loggerUserLevel.info("could not update (2) message: " + telegramMsg.message_id);
                 await this.telegram.deleteMessage(userId, telegramMsg.message_id);
                 await ctx.reply(`${selectedLocation === 0 ? 'Home' : 'Work'} wurde auf ${location.name} aktualisiert.`);
             }
             ctx.session.locationPromisse = null;
             this.sendUpdate(userId, location.id, selectedLocation);
         });
+
+        await this.telegraf.launch();
     }
 
-    async sendUpdate(chatId: string, regionId: string, regionType: number) {
+    async locationUpdateHandling(ctx) {
+        const userId = ctx.update.message.from.id;
+        const point: [number, number] = [ctx.update.message.location.longitude, ctx.update.message.location.latitude];
+        loggerUserLevel.info(`${userId} send new location: ${point}`);
+
+        ctx.session.locationPromisse = this.covid19Region.findLocationForPoint(point);
+        ctx.session.locationDesisionMsg = (await this.telegram.sendMessage(userId, 'Als was möchtest du diesen Ort festlegen?', {
+            reply_markup: {
+                inline_keyboard: [[
+                    {text: 'Home 🏠', callback_data: `location-0-${userId}-${point[0]}-${point[1]}`},
+                    {text: 'Work 🏢', callback_data: `location-1-${userId}-${point[0]}-${point[1]}`}
+                ]]
+            }
+        })).message_id;
+
+
+    }
+
+    async sendUpdate(chatId: number, regionId: string, regionType: number) {
         const cases = (await this.covid19Region.getOneLocation(regionId)).cases7_per_100k;
         let warningMsg;
         let colorEmoji;

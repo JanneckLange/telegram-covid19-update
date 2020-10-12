@@ -22,7 +22,7 @@ export class FollowerController {
         }
     }
 
-    public async update(id: string, regionId: string, locationType: number): Promise<void> {
+    public async update(id: number, regionId: string, locationType: number): Promise<void> {
         let updateData;
         if(locationType === 0){
             updateData = {regionId0: regionId}
@@ -32,7 +32,7 @@ export class FollowerController {
         await FollowerModel.findOneAndUpdate({telegramId: id}, updateData);
     }
 
-    public async remove(id: string): Promise<void> {
+    public async remove(id: number): Promise<void> {
         await FollowerModel.findOneAndDelete({telegramId: id});
     }
 

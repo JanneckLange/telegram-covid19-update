@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 
 interface IFollower {
     _id: string;
-    telegramId: string;
+    telegramId: number;
     username: string
     regionId0?: string
     regionId1?: string

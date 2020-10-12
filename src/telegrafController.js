@@ -67,6 +67,7 @@ var TelegrafController = /** @class */ (function () {
                                 switch (_a.label) {
                                     case 0:
                                         ctx.session.locationPromisse = null;
+                                        this.sendAdminMsg(ctx.update.message.from.first_name + " hat den Bot Aboniert");
                                         logger_1.loggerUserLevel.info(ctx.update.message.from.id + " new User");
                                         ctx.reply("Willkommen " + ctx.update.message.from.first_name + ",\n\n1\uFE0F\u20E3 Sende mir deinen Standort oder den Standort der Region zu, von der du Covid19 Statistiken erhalten m\u00F6chtest.\n\n2\uFE0F\u20E3 Erhalte t\u00E4glich ein Update.\n\n\u2705 Du kannst die Region jederzeit \u00E4ndern.");
                                         return [4 /*yield*/, this.follower.create(ctx.update.message.from.id, ctx.update.message.from.first_name ? ctx.update.message.from.first_name : ctx.update.message.from.username)];
@@ -110,6 +111,98 @@ var TelegrafController = /** @class */ (function () {
                                 return [2 /*return*/];
                             });
                         }); });
+                        /**
+                         * /location-homeOrWork-userId-long-lat
+                         */
+                        this.telegraf.action(/location-.*/, function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var selectedLocation, userId, point, telegramMsg, msg, e_1, location, e_2, msg_1, e_3, e_4;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        selectedLocation = +(ctx['update']['callback_query']['data'].split('-')[1]);
+                                        userId = +(ctx['update']['callback_query']['data'].split('-')[2]);
+                                        point = [+(ctx['update']['callback_query']['data'].split('-')[3]), +(ctx['update']['callback_query']['data'].split('-')[4])];
+                                        logger_1.loggerUserLevel.info(userId + " clicked " + ctx['update']['callback_query']['data']);
+                                        msg = "Ort wird geladen. Das kann bis zu 30 Sekunden dauern. Bitte warte solange.";
+                                        _a.label = 1;
+                                    case 1:
+                                        _a.trys.push([1, 4, , 6]);
+                                        if (!ctx.session.locationDesisionMsg) return [3 /*break*/, 3];
+                                        return [4 /*yield*/, this.telegram.editMessageText(userId, ctx.session.locationDesisionMsg, null, msg)];
+                                    case 2:
+                                        telegramMsg = _a.sent();
+                                        _a.label = 3;
+                                    case 3: return [3 /*break*/, 6];
+                                    case 4:
+                                        e_1 = _a.sent();
+                                        return [4 /*yield*/, ctx.reply(msg)];
+                                    case 5:
+                                        telegramMsg = _a.sent();
+                                        return [3 /*break*/, 6];
+                                    case 6:
+                                        _a.trys.push([6, 8, , 10]);
+                                        if (!ctx.session.locationPromisse) {
+                                            throw new Error();
+                                        }
+                                        return [4 /*yield*/, ctx.session.locationPromisse];
+                                    case 7:
+                                        location = _a.sent();
+                                        return [3 /*break*/, 10];
+                                    case 8:
+                                        e_2 = _a.sent();
+                                        logger_1.loggerUserLevel.info('Promisse not in session load again');
+                                        return [4 /*yield*/, this.covid19Region.findLocationForPoint(point)];
+                                    case 9:
+                                        location = _a.sent();
+                                        return [3 /*break*/, 10];
+                                    case 10:
+                                        console.log(location);
+                                        if (!!location) return [3 /*break*/, 16];
+                                        logger_1.loggerUserLevel.error(userId + " location could not be updated " + point + " (long, lat)", new Error());
+                                        this.sendAdminMsg(userId + " location could not be updated " + point + " (long, lat)");
+                                        msg_1 = "Der Standort konnte keiner Region in Deutschland zugeordnet werden. Versuche einen anderen Standort. F\u00FCr Standorte au\u00DFerhalb von Deutschland habe ich leider noch keine Daten.";
+                                        _a.label = 11;
+                                    case 11:
+                                        _a.trys.push([11, 13, , 15]);
+                                        return [4 /*yield*/, ctx.reply(msg_1)];
+                                    case 12:
+                                        _a.sent();
+                                        return [3 /*break*/, 15];
+                                    case 13:
+                                        e_3 = _a.sent();
+                                        return [4 /*yield*/, this.telegram.sendMessage(userId, msg_1)];
+                                    case 14:
+                                        _a.sent();
+                                        return [3 /*break*/, 15];
+                                    case 15: return [2 /*return*/];
+                                    case 16: return [4 /*yield*/, this.follower.update(userId, location.id, selectedLocation)];
+                                    case 17:
+                                        _a.sent();
+                                        logger_1.loggerUserLevel.info(userId + " " + (selectedLocation === 0 ? 'Home' : 'Work') + " location updated to " + location.id);
+                                        _a.label = 18;
+                                    case 18:
+                                        _a.trys.push([18, 20, , 23]);
+                                        return [4 /*yield*/, this.telegram.editMessageText(userId, telegramMsg.message_id, null, (selectedLocation === 0 ? 'Home' : 'Work') + " wurde auf " + location.name + " aktualisiert.")];
+                                    case 19:
+                                        _a.sent();
+                                        return [3 /*break*/, 23];
+                                    case 20:
+                                        e_4 = _a.sent();
+                                        logger_1.loggerUserLevel.info("could not update (2) message: " + telegramMsg.message_id);
+                                        return [4 /*yield*/, this.telegram.deleteMessage(userId, telegramMsg.message_id)];
+                                    case 21:
+                                        _a.sent();
+                                        return [4 /*yield*/, ctx.reply((selectedLocation === 0 ? 'Home' : 'Work') + " wurde auf " + location.name + " aktualisiert.")];
+                                    case 22:
+                                        _a.sent();
+                                        return [3 /*break*/, 23];
+                                    case 23:
+                                        ctx.session.locationPromisse = null;
+                                        this.sendUpdate(userId, location.id, selectedLocation);
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); });
                         return [4 /*yield*/, this.telegraf.launch()];
                     case 1:
                         _a.sent();
@@ -120,15 +213,15 @@ var TelegrafController = /** @class */ (function () {
     };
     TelegrafController.prototype.locationUpdateHandling = function (ctx) {
         return __awaiter(this, void 0, void 0, function () {
-            var userId, point, telegramMsg;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var userId, point, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         userId = ctx.update.message.from.id;
                         point = [ctx.update.message.location.longitude, ctx.update.message.location.latitude];
                         logger_1.loggerUserLevel.info(userId + " send new location: " + point);
                         ctx.session.locationPromisse = this.covid19Region.findLocationForPoint(point);
+                        _a = ctx.session;
                         return [4 /*yield*/, this.telegram.sendMessage(userId, 'Als was möchtest du diesen Ort festlegen?', {
                                 reply_markup: {
                                     inline_keyboard: [[
@@ -138,103 +231,7 @@ var TelegrafController = /** @class */ (function () {
                                 }
                             })];
                     case 1:
-                        telegramMsg = _a.sent();
-                        this.telegraf.action(/location-\d/, function (ctxAction) { return __awaiter(_this, void 0, void 0, function () {
-                            var selectedLocation, subPoint, e_1, e_2, location, e_3, msg, e_4, e_5;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        logger_1.loggerUserLevel.info(userId + " clicked " + ctxAction['update']['callback_query']['data']);
-                                        selectedLocation = +(ctxAction['update']['callback_query']['data'].split('-')[1]);
-                                        subPoint = [+(ctxAction['update']['callback_query']['data'].split('-')[3]), +(ctxAction['update']['callback_query']['data'].split('-')[4])];
-                                        _a.label = 1;
-                                    case 1:
-                                        _a.trys.push([1, 3, , 9]);
-                                        return [4 /*yield*/, this.telegram.editMessageText(userId, telegramMsg.message_id, null, 'Ort wird geladen...')];
-                                    case 2:
-                                        telegramMsg = _a.sent();
-                                        return [3 /*break*/, 9];
-                                    case 3:
-                                        e_1 = _a.sent();
-                                        logger_1.loggerUserLevel.warn("could not update (1) message: " + telegramMsg.message_id);
-                                        _a.label = 4;
-                                    case 4:
-                                        _a.trys.push([4, 6, , 7]);
-                                        return [4 /*yield*/, this.telegram.deleteMessage(userId, telegramMsg.message_id)];
-                                    case 5:
-                                        _a.sent();
-                                        return [3 /*break*/, 7];
-                                    case 6:
-                                        e_2 = _a.sent();
-                                        logger_1.loggerUserLevel.warn("could not delete (1) message: " + telegramMsg.message_id);
-                                        return [3 /*break*/, 7];
-                                    case 7: return [4 /*yield*/, ctx.reply('Ort wird geladen. Das kann bis zu 30 Sekunden dauern.')];
-                                    case 8:
-                                        telegramMsg = _a.sent();
-                                        return [3 /*break*/, 9];
-                                    case 9:
-                                        _a.trys.push([9, 11, , 13]);
-                                        if (!ctx.session.locationPromisse) {
-                                            throw new Error();
-                                        }
-                                        return [4 /*yield*/, ctx.session.locationPromisse];
-                                    case 10:
-                                        location = _a.sent();
-                                        return [3 /*break*/, 13];
-                                    case 11:
-                                        e_3 = _a.sent();
-                                        return [4 /*yield*/, this.covid19Region.findLocationForPoint(subPoint)];
-                                    case 12:
-                                        location = _a.sent();
-                                        return [3 /*break*/, 13];
-                                    case 13:
-                                        console.log(location);
-                                        if (!!location) return [3 /*break*/, 19];
-                                        logger_1.loggerUserLevel.error(userId + " location could not be updated " + point + " (long, lat)", new Error());
-                                        this.sendAdminMsg(userId + " location could not be updated " + point + " (long, lat)");
-                                        msg = "Der Standort konnte keiner Region in Deutschland zugeordnet werden. Versuche einen anderen Standort. F\u00FCr Standorte au\u00DFerhalb von Deutschland habe ich leider noch keine Daten.";
-                                        _a.label = 14;
-                                    case 14:
-                                        _a.trys.push([14, 16, , 18]);
-                                        return [4 /*yield*/, ctx.reply(msg)];
-                                    case 15:
-                                        _a.sent();
-                                        return [3 /*break*/, 18];
-                                    case 16:
-                                        e_4 = _a.sent();
-                                        return [4 /*yield*/, this.telegram.sendMessage(userId, msg)];
-                                    case 17:
-                                        _a.sent();
-                                        return [3 /*break*/, 18];
-                                    case 18: return [2 /*return*/];
-                                    case 19: return [4 /*yield*/, this.follower.update(userId, location.id, selectedLocation)];
-                                    case 20:
-                                        _a.sent();
-                                        logger_1.loggerUserLevel.info(userId + " " + (selectedLocation === 0 ? 'Home' : 'Work') + " location updated to " + location.id);
-                                        _a.label = 21;
-                                    case 21:
-                                        _a.trys.push([21, 23, , 26]);
-                                        return [4 /*yield*/, this.telegram.editMessageText(userId, telegramMsg.message_id, null, (selectedLocation === 0 ? 'Home' : 'Work') + " wurde auf " + location.name + " aktualisiert.")];
-                                    case 22:
-                                        _a.sent();
-                                        return [3 /*break*/, 26];
-                                    case 23:
-                                        e_5 = _a.sent();
-                                        logger_1.loggerUserLevel.warn("could not update (2) message: " + telegramMsg.message_id);
-                                        return [4 /*yield*/, this.telegram.deleteMessage(userId, telegramMsg.message_id)];
-                                    case 24:
-                                        _a.sent();
-                                        return [4 /*yield*/, ctx.reply((selectedLocation === 0 ? 'Home' : 'Work') + " wurde auf " + location.name + " aktualisiert.")];
-                                    case 25:
-                                        _a.sent();
-                                        return [3 /*break*/, 26];
-                                    case 26:
-                                        ctx.session.locationPromisse = null;
-                                        this.sendUpdate(userId, location.id, selectedLocation);
-                                        return [2 /*return*/];
-                                }
-                            });
-                        }); });
+                        _a.locationDesisionMsg = (_b.sent()).message_id;
                         return [2 /*return*/];
                 }
             });
@@ -242,7 +239,7 @@ var TelegrafController = /** @class */ (function () {
     };
     TelegrafController.prototype.sendUpdate = function (chatId, regionId, regionType) {
         return __awaiter(this, void 0, void 0, function () {
-            var cases, warningMsg, colorEmoji, e_6;
+            var cases, warningMsg, colorEmoji, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.covid19Region.getOneLocation(regionId)];
@@ -272,15 +269,15 @@ var TelegrafController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 8];
                     case 4:
-                        e_6 = _a.sent();
-                        if (!(e_6.code === 403)) return [3 /*break*/, 6];
-                        logger_1.loggerUserLevel.info(chatId + " removed User - " + e_6.description);
+                        e_5 = _a.sent();
+                        if (!(e_5.code === 403)) return [3 /*break*/, 6];
+                        logger_1.loggerUserLevel.info(chatId + " removed User - " + e_5.description);
                         return [4 /*yield*/, this.follower.remove(chatId)];
                     case 5:
                         _a.sent();
                         return [3 /*break*/, 7];
                     case 6:
-                        logger_1.loggerUserLevel.error('could not send message to user', e_6);
+                        logger_1.loggerUserLevel.error('could not send message to user', e_5);
                         _a.label = 7;
                     case 7: return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
@@ -290,7 +287,7 @@ var TelegrafController = /** @class */ (function () {
     };
     TelegrafController.prototype.adminUpdate = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b, _c, _d, e_7;
+            var _a, _b, _c, _d, e_6;
             return __generator(this, function (_e) {
                 switch (_e.label) {
                     case 0:
@@ -304,8 +301,8 @@ var TelegrafController = /** @class */ (function () {
                         _e.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        e_7 = _e.sent();
-                        logger_1.loggerUserLevel.error('could not send admin update', e_7);
+                        e_6 = _e.sent();
+                        logger_1.loggerUserLevel.error('could not send admin update', e_6);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
