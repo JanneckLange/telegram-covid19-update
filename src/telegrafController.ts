@@ -86,20 +86,26 @@ export class TelegrafController {
         });
 
         this.telegraf.action(/location-\d/, async (ctxAction) => {
+            loggerUserLevel.info(`${userId} clicked ${ctxAction['update']['callback_query']['data']}`);
             let selectedLocation: number = +(ctxAction['update']['callback_query']['data'].split('-')[1]);
             const subPoint: [number, number] = [+(ctxAction['update']['callback_query']['data'].split('-')[3]), +(ctxAction['update']['callback_query']['data'].split('-')[4])];
-            console.log(subPoint)
+
             // edit message, delete and send new message if edit fail
             try {
                 telegramMsg = await this.telegram.editMessageText(userId, telegramMsg.message_id, null, 'Ort wird geladen...');
             } catch (e) {
-                await this.telegram.deleteMessage(userId, telegramMsg.message_id);
-                telegramMsg = await ctx.reply('Ort wird geladen...');
+                loggerUserLevel.warn("could not update (1) message: " + telegramMsg.message_id);
+                try {
+                    await this.telegram.deleteMessage(userId, telegramMsg.message_id);
+                } catch (e) {
+                    loggerUserLevel.warn("could not delete (1) message: " + telegramMsg.message_id);
+                }
+                telegramMsg = await ctx.reply('Ort wird geladen. Das kann bis zu 30 Sekunden dauern.');
             }
 
             let location;
             try {
-                if(!ctx.session.locationPromisse){
+                if (!ctx.session.locationPromisse) {
                     throw new Error();
                 }
                 location = await ctx.session.locationPromisse;
@@ -127,6 +133,7 @@ export class TelegrafController {
             try {
                 await this.telegram.editMessageText(userId, telegramMsg.message_id, null, `${selectedLocation === 0 ? 'Home' : 'Work'} wurde auf ${location.name} aktualisiert.`);
             } catch (e) {
+                loggerUserLevel.warn("could not update (2) message: " + telegramMsg.message_id);
                 await this.telegram.deleteMessage(userId, telegramMsg.message_id);
                 await ctx.reply(`${selectedLocation === 0 ? 'Home' : 'Work'} wurde auf ${location.name} aktualisiert.`);
             }
