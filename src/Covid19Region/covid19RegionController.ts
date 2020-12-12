@@ -13,18 +13,24 @@ export class Covid19RegionsController {
                 if (err) {
                     reject(err);
                 }
-                resolve({
-                    id: body.features[0].attributes.RS,
-                    last_update: body.features[0].attributes.last_update,
-                    cases: body.features[0].attributes.cases,
-                    cases7_per_100k: Covid19RegionsController.round(body.features[0].attributes.cases7_per_100k),
-                    deaths: body.features[0].attributes.deaths,
-                    einwohner: body.features[0].attributes.EWZ,
-                    name: body.features[0].attributes.GEN,
-                });
+                try{
+                    resolve({
+                        id: body.features[0].attributes.RS,
+                        last_update: body.features[0].attributes.last_update,
+                        cases: body.features[0].attributes.cases,
+                        cases7_per_100k: Covid19RegionsController.round(body.features[0].attributes.cases7_per_100k),
+                        deaths: body.features[0].attributes.deaths,
+                        einwohner: body.features[0].attributes.EWZ,
+                        name: body.features[0].attributes.GEN,
+                    });
+                }catch (e) {
+                    console.error('Caught error getOneLocation promise - locationId:'+locationId, err);
+                    reject('Caught error getOneLocation promise - locationId:'+locationId);
+                }
+
             })));
         } catch (err) {
-            console.error('Caught error', err);
+            console.error('Caught error getOneLocation - locationId:'+locationId, err);
         }
     }
 
